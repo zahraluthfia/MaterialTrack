@@ -11,8 +11,7 @@ from io import BytesIO
 # CONFIGURATION
 # ==================================================
 
-DB_PATH = "/content/drive/MyDrive/MaterialTrack/materialtrack.db"
-
+DB_PATH = "materialtrack.db"
 st.set_page_config(
     page_title="MaterialTrack",
     page_icon="🏗️",
