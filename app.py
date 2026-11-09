@@ -55,7 +55,7 @@ p, label {
 }
 
 .hero {
-    background: linear-gradient(120deg, #DDEBFA, #FFF0C9);
+    background: linear-gradient(120deg, #DDEBFA, #4b30d1);
     padding: 30px;
     border-radius: 22px;
     margin-bottom: 24px;
@@ -106,10 +106,29 @@ div[data-testid="stMetric"] {
     padding: 15px;
 }
 
-input, textarea {
+/* Kolom input */
+div[data-baseweb="input"] input,
+div[data-baseweb="textarea"] textarea {
+    background-color: #FFFFFF !important;
+    color: #604052 !important;
+    -webkit-text-fill-color: #604052 !important;
     border-radius: 10px !important;
 }
 
+/* Tulisan petunjuk dalam kolom */
+div[data-baseweb="input"] input::placeholder,
+div[data-baseweb="textarea"] textarea::placeholder {
+    color: #B49AA7 !important;
+    -webkit-text-fill-color: #B49AA7 !important;
+    opacity: 1 !important;
+}
+
+/* Garis kolom */
+div[data-baseweb="input"] > div,
+div[data-baseweb="textarea"] > div {
+    background-color: #FFFFFF !important;
+    border-color: #E9C8D7 !important;
+}
 .stTabs [data-baseweb="tab-list"] {
     gap: 8px;
 }
