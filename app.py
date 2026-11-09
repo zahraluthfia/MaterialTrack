@@ -55,7 +55,7 @@ p, label {
 }
 
 .hero {
-    background: linear-gradient(120deg, #DDEBFA, #4b30d1);
+    background: linear-gradient(120deg, #DDEBFA, #d5f4f7);
     padding: 30px;
     border-radius: 22px;
     margin-bottom: 24px;
