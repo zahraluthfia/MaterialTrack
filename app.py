@@ -958,10 +958,27 @@ def project_detail():
         if not stock:
             st.info("Belum ada material.")
         else:
+            
             rows = []
 
             for m in stock:
                 remaining = m["total_in"] - m["total_out"]
+                planned = float(m["planned_qty"] or 0)
+
+                if planned <= 0:
+                    remaining_pct = None
+                    status = "Belum ada RAB"
+                else:
+                    remaining_pct = (remaining / planned) * 100
+
+                    if remaining < 0:
+                        status = "Defisit"
+                    elif remaining_pct <= 3:
+                        status = "Kritis"
+                    elif remaining_pct <= 10:
+                        status = "Menipis"
+                    else:
+                        status = "Normal"
 
                 rows.append({
                     "Material": m["name"],
@@ -970,14 +987,48 @@ def project_detail():
                     "Material Masuk": m["total_in"],
                     "Material Keluar": m["total_out"],
                     "Sisa Stok": remaining,
+                    "Persentase Sisa": remaining_pct,
+                    "Status Stok": status,
                     "Harga Satuan": m["unit_price"],
                     "Nilai Stok": remaining * m["unit_price"]
                 })
 
             stock_df = pd.DataFrame(rows)
 
+            def warna_status(row):
+                status = row["Status Stok"]
+
+                if status in ["Kritis", "Defisit"]:
+                    color = (
+                        "background-color: #FF2424;"
+                        "color: white;"
+                        "font-weight: bold;"
+                    )
+                elif status == "Menipis":
+                    color = (
+                        "background-color: #FFD500;"
+                        "color: #392B00;"
+                        "font-weight: bold;"
+                    )
+                else:
+                    color = (
+                        "background-color: #FCE8F0;"
+                        "color: #604052;"
+                    )
+
+                return [color] * len(row)
+
+            styled_stock = (
+                stock_df.style
+                .apply(warna_status, axis=1)
+                .format({
+                    "Persentase Sisa": lambda x:
+                        "—" if pd.isna(x) else f"{x:.1f}%"
+                })
+            )
+
             st.dataframe(
-                stock_df,
+                styled_stock,
                 use_container_width=True,
                 hide_index=True
             )
