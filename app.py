@@ -675,6 +675,68 @@ def project_detail():
     </div>
     """, unsafe_allow_html=True)
 
+    # --------------------------
+    # RINGKASAN MONITORING STOK
+    # --------------------------
+
+    st.subheader("Ringkasan Monitoring Stok")
+
+    stock_summary = get_stock(project_id)
+
+    normal_count = 0
+    warning_count = 0
+    critical_count = 0
+    no_rab_count = 0
+
+    for m in stock_summary:
+        remaining = float(m["total_in"] or 0) - float(m["total_out"] or 0)
+        planned = float(m["planned_qty"] or 0)
+
+        if planned <= 0:
+            no_rab_count += 1
+            continue
+
+        percentage = (remaining / planned) * 100
+
+        if remaining < 0 or percentage <= 3:
+            critical_count += 1
+        elif percentage <= 10:
+            warning_count += 1
+        else:
+            normal_count += 1
+
+    total_material = len(stock_summary)
+
+    c1, c2, c3, c4 = st.columns(4)
+
+    c1.metric("Total Material", total_material)
+    c2.metric("Normal", normal_count)
+    c3.metric("Stok Menipis", warning_count)
+    c4.metric("Stok Kritis", critical_count)
+
+    if critical_count > 0:
+        st.error(
+            f"🔴 PERINGATAN! Ada {critical_count} material "
+            "dalam kondisi kritis atau defisit. Segera lakukan pengadaan."
+        )
+
+    if warning_count > 0:
+        st.warning(
+            f"🟡 PERHATIAN! Ada {warning_count} material "
+            "yang stoknya mulai menipis."
+        )
+
+    if critical_count == 0 and warning_count == 0:
+        st.success("🩷 Semua stok material dalam kondisi normal.")
+
+    if no_rab_count > 0:
+        st.info(
+            f"Ada {no_rab_count} material yang belum memiliki "
+            "jumlah kebutuhan RAB."
+        )
+
+    st.divider()
+
     overview, rab, incoming, outgoing, stock_report = st.tabs([
         "Overview",
         "Data Material / RAB",
