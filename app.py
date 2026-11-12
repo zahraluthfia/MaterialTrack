@@ -774,13 +774,39 @@ def dashboard():
             </div>
             """, unsafe_allow_html=True)
 
-            if st.button(
+                        if st.button(
                 "Buka Proyek →",
                 key=f"project_{project['id']}",
                 use_container_width=True
             ):
                 st.session_state.project_id = project["id"]
                 st.rerun()
+
+            if st.button(
+                "🗑️ Hapus Proyek",
+                key=f"delete_project_{project['id']}",
+                use_container_width=True
+            ):
+                st.session_state.confirm_delete = project["id"]
+                st.rerun()
+
+            if st.session_state.get("confirm_delete") == project["id"]:
+                st.warning(f"Yakin ingin menghapus proyek {project['name']}?")
+                if st.button("Ya, Hapus", key=f"confirm_{project['id']}"):
+                    with connect_db() as db:
+                        db.execute(
+                            "DELETE FROM projects WHERE id = ? AND user_id = ?",
+                            (project["id"], user_id)
+                        )
+                        db.commit()
+
+                    st.session_state.pop("confirm_delete", None)
+                    st.success("Proyek berhasil dihapus.")
+                    st.rerun()
+
+                if st.button("Batal", key=f"cancel_{project['id']}"):
+                    st.session_state.pop("confirm_delete", None)
+                    st.rerun()
 
 
 # ==================================================
