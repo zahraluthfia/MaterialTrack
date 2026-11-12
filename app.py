@@ -1127,6 +1127,7 @@ def project_detail():
                         filtered_df["transaction_date"].dt.strftime("%d-%m-%Y")
                     )
 
+                   
                     daily_data = filtered_df.pivot_table(
                         index="Tanggal",
                         columns="kind",
@@ -1142,14 +1143,36 @@ def project_detail():
 
                     daily_data = daily_data.sort_index()
 
-                    daily_data.index = daily_data.index.strftime("%d-%m-%Y")
+                    # Lengkapi tanggal yang tidak memiliki transaksi
+                    full_dates = pd.date_range(
+                        start=daily_data.index.min(),
+                        end=daily_data.index.max(),
+                        freq="D"
+                    )
+
+                    daily_data = daily_data.reindex(
+                        full_dates,
+                        fill_value=0
+                    )
 
                     daily_data = daily_data.rename(columns={
                         "Masuk": "Material Masuk",
                         "Keluar": "Material Keluar"
                     })
 
-                    st.line_chart(daily_data)
+                    for col in ["Material Masuk", "Material Keluar"]:
+                        if col not in daily_data.columns:
+                            daily_data[col] = 0
+
+                    daily_data.index = daily_data.index.strftime("%d-%m-%Y")
+
+                    st.line_chart(
+                        daily_data[["Material Masuk", "Material Keluar"]],
+                        height=350,
+                        color=["#E9AFC5", "#A995C9"],
+                        x_label="Tanggal",
+                        y_label="Jumlah Material"
+                    )
 
                 else:
                     st.info(
