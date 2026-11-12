@@ -23,48 +23,75 @@ st.set_page_config(
 # DESIGN
 # ==================================================
 
+
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --pink: #E9AFC5;
+    --pink-light: #FFF1F6;
+    --pink-dark: #B96D8C;
+    --purple: #A995C9;
+    --text: #574453;
+    --muted: #8D7C89;
+    --border: #F0DCE6;
+    --yellow: #FFD84D;
+    --red: #FF5252;
+}
 
 html, body, [class*="css"] {
     font-family: 'DM Sans', sans-serif;
 }
 
 .stApp {
-    background: #FFF8FB;
+    background:
+        radial-gradient(circle at 8% 10%, #FCE4EF 0, transparent 25%),
+        radial-gradient(circle at 95% 85%, #EAE3FA 0, transparent 27%),
+        linear-gradient(135deg, #FFFAFC, #FFF6FA 55%, #F8F5FF);
+    color: var(--text);
 }
 
 .block-container {
-    max-width: 1250px;
-    padding-top: 1.8rem;
+    max-width: 1350px;
+    padding-top: 2rem;
     padding-bottom: 3rem;
 }
 
+/* SIDEBAR */
 [data-testid="stSidebar"] {
-    background: #FCE8F0;
-    border-right: 1px solid #F3D5E1;
+    background: linear-gradient(180deg, #FCE8F0, #F5EAF8);
+    border-right: 1px solid #F0D5E2;
 }
 
-h1, h2, h3 {
+[data-testid="stSidebar"] > div:first-child {
+    background: transparent;
+}
+
+/* HEADING */
+h1, h2, h3, h4 {
     color: #604052;
+    font-weight: 800;
+    letter-spacing: -0.5px;
 }
 
 p, label {
     color: #665663;
 }
 
+/* HERO */
 .hero {
-    background: linear-gradient(120deg, #DDEBFA, #d5f4f7);
-    padding: 30px;
-    border-radius: 22px;
-    margin-bottom: 24px;
-    color: #344C68;
+    background: linear-gradient(120deg, #DDEBFA, #E9DDF8, #F9DCE8);
+    padding: 32px;
+    border-radius: 24px;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 25px rgba(153, 116, 151, 0.10);
+    animation: fadeUp .65s ease both;
 }
 
 .hero h1 {
     color: #344C68;
-    font-size: 32px;
+    font-size: 34px;
     font-weight: 800;
 }
 
@@ -74,9 +101,11 @@ p, label {
 
 .pink-hero {
     background: linear-gradient(120deg, #F9DCE8, #E9DDF8);
-    padding: 25px;
-    border-radius: 20px;
-    margin-bottom: 20px;
+    padding: 27px;
+    border-radius: 23px;
+    margin-bottom: 23px;
+    box-shadow: 0 8px 22px rgba(153, 116, 151, 0.10);
+    animation: fadeUp .6s ease both;
 }
 
 .pink-hero h2 {
@@ -84,38 +113,91 @@ p, label {
     margin-bottom: 5px;
 }
 
+/* PROJECT CARD */
 .project-card {
-    background: #FFFFFF;
-    border: 1px solid #F0DCE5;
-    border-radius: 17px;
-    padding: 18px;
-    margin-bottom: 8px;
+    background: rgba(255,255,255,.92);
+    border: 1px solid var(--border);
+    border-radius: 19px;
+    padding: 20px;
+    margin-bottom: 12px;
+    box-shadow: 0 5px 18px rgba(128, 86, 111, .06);
+    transition: transform .25s ease, box-shadow .25s ease;
 }
 
-div.stButton > button {
-    border-radius: 11px;
-    font-weight: 600;
+.project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 28px rgba(128, 86, 111, .13);
+}
+
+/* BUTTON */
+div.stButton > button,
+div.stDownloadButton > button {
+    border-radius: 13px;
+    font-weight: 700;
+    min-height: 43px;
     border: 1px solid #E9C8D7;
-    min-height: 42px;
+    background: linear-gradient(135deg, #FFF1F6, #F9E5EF);
+    color: #75465B;
+    transition: all .2s ease;
+    box-shadow: 0 3px 9px rgba(185, 109, 140, .08);
 }
 
+div.stButton > button:hover,
+div.stDownloadButton > button:hover {
+    background: linear-gradient(135deg, #E9AFC5, #D9BCEB);
+    color: white;
+    border-color: #D9A5BD;
+    transform: translateY(-2px);
+    box-shadow: 0 7px 16px rgba(185, 109, 140, .20);
+}
+
+div.stButton > button:active,
+div.stDownloadButton > button:active {
+    background: #B96D8C !important;
+    color: white !important;
+    transform: scale(.97);
+}
+
+div.stButton > button:focus:not(:active) {
+    border-color: #C77F9D;
+    color: #75465B;
+    box-shadow: 0 0 0 3px rgba(233, 175, 197, .25);
+}
+
+/* METRIC CARDS */
 div[data-testid="stMetric"] {
-    background: white;
+    background: rgba(255,255,255,.92);
     border: 1px solid #F0DCE5;
-    border-radius: 15px;
-    padding: 15px;
+    border-radius: 18px;
+    padding: 19px;
+    box-shadow: 0 5px 18px rgba(128, 86, 111, .06);
+    transition: transform .25s ease, box-shadow .25s ease;
 }
 
-/* Kolom input */
+div[data-testid="stMetric"]:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 22px rgba(128, 86, 111, .12);
+}
+
+div[data-testid="stMetricLabel"] {
+    color: #8D7181;
+    font-weight: 600;
+}
+
+div[data-testid="stMetricValue"] {
+    color: #75465B;
+    font-weight: 800;
+}
+
+/* INPUT */
 div[data-baseweb="input"] input,
 div[data-baseweb="textarea"] textarea {
     background-color: #FFFFFF !important;
     color: #604052 !important;
     -webkit-text-fill-color: #604052 !important;
-    border-radius: 10px !important;
+    border-radius: 11px !important;
 }
 
-/* Tulisan petunjuk dalam kolom */
 div[data-baseweb="input"] input::placeholder,
 div[data-baseweb="textarea"] textarea::placeholder {
     color: #B49AA7 !important;
@@ -123,34 +205,86 @@ div[data-baseweb="textarea"] textarea::placeholder {
     opacity: 1 !important;
 }
 
-/* Garis kolom */
 div[data-baseweb="input"] > div,
 div[data-baseweb="textarea"] > div {
     background-color: #FFFFFF !important;
     border-color: #E9C8D7 !important;
+    border-radius: 11px !important;
 }
+
+/* TABS */
 .stTabs [data-baseweb="tab-list"] {
-    gap: 8px;
+    gap: 9px;
+    border-bottom: 1px solid #F0DCE5;
 }
 
 .stTabs [data-baseweb="tab"] {
     background: #F9E8EF;
-    border-radius: 10px;
-    padding: 9px 15px;
+    border-radius: 12px 12px 0 0;
+    padding: 11px 17px;
+    color: #806477;
+    font-weight: 600;
+    transition: all .2s ease;
 }
 
-.stTabs [aria-selected="true"] {
-    background: #EFC2D4;
+.stTabs [data-baseweb="tab"]:hover {
+    background: #F1D3E0;
+    color: #75465B;
 }
 
+.stTabs [data-baseweb="tab"][aria-selected="true"] {
+    background: #E9AFC5;
+    color: #FFFFFF;
+    font-weight: 800;
+}
+
+/* FORM */
 div[data-testid="stForm"] {
-    background: #FFFFFF;
-    padding: 16px;
+    background: rgba(255,255,255,.95);
+    padding: 19px;
     border: 1px solid #F1DCE5;
-    border-radius: 15px;
+    border-radius: 18px;
+    box-shadow: 0 5px 18px rgba(128, 86, 111, .05);
 }
 
+/* ALERT */
+div[data-testid="stAlert"] {
+    border-radius: 14px;
+}
+
+/* TABLE */
+div[data-testid="stDataFrame"] {
+    border: 1px solid #F0DCE5;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+/* DIVIDER */
+hr {
+    border-color: #F0DCE5;
+}
+
+/* ANIMATION */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+    }
+}
 </style>
+""", unsafe_allow_html=True)
+
 """, unsafe_allow_html=True)
 
 
