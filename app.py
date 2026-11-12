@@ -1539,12 +1539,14 @@ def transaction_page(kind):
                         "Belum ada dokumentasi tambahan untuk transaksi ini."
                     )
 
-                st.write(f"**Jumlah:** {transaction['qty']} {transaction['unit']}")
+                st.write(
+                    f"**Jumlah:** {transaction['qty']} {transaction['unit']}"
+                )
                 st.write(
                     f"**Keterangan:** {transaction['note'] or '-'}"
                 )
 
-       else:
+    else:
         st.info("Belum ada transaksi.")
 
     with incoming:
