@@ -282,6 +282,10 @@ hr {
         transition-duration: .01ms !important;
     }
 }
+div[data-testid="stButton"] button {
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
