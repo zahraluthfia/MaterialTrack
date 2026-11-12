@@ -1051,6 +1051,118 @@ def project_detail():
             st.info("Belum ada data material untuk ditampilkan.")
 
         # --------------------------
+        # GRAFIK PERKEMBANGAN TRANSAKSI
+        # --------------------------
+        st.divider()
+        st.subheader("📈 Perkembangan Transaksi Material")
+
+        transaction_rows = get_transactions(project_id)
+
+        if transaction_rows:
+            transaction_df = dataframe(transaction_rows)
+
+            transaction_df["transaction_date"] = pd.to_datetime(
+                transaction_df["transaction_date"],
+                errors="coerce"
+            )
+
+            transaction_df["qty"] = pd.to_numeric(
+                transaction_df["qty"],
+                errors="coerce"
+            ).fillna(0)
+
+            transaction_df = transaction_df.dropna(
+                subset=["transaction_date"]
+            )
+
+            if not transaction_df.empty:
+
+                filter_col1, filter_col2 = st.columns(2)
+
+                with filter_col1:
+                    period = st.selectbox(
+                        "Periode Grafik",
+                        ["7 Hari Terakhir", "30 Hari Terakhir", "Semua Transaksi"],
+                        key="overview_period"
+                    )
+
+                with filter_col2:
+                    material_options = ["Semua Material"] + sorted(
+                        transaction_df["material"].dropna().unique().tolist()
+                    )
+
+                    selected_material = st.selectbox(
+                        "Pilih Material",
+                        material_options,
+                        key="overview_material"
+                    )
+
+                filtered_df = transaction_df.copy()
+
+                if period == "7 Hari Terakhir":
+                    start_date = (
+                        pd.Timestamp.today().normalize()
+                        - pd.Timedelta(days=6)
+                    )
+                    filtered_df = filtered_df[
+                        filtered_df["transaction_date"] >= start_date
+                    ]
+
+                elif period == "30 Hari Terakhir":
+                    start_date = (
+                        pd.Timestamp.today().normalize()
+                        - pd.Timedelta(days=29)
+                    )
+                    filtered_df = filtered_df[
+                        filtered_df["transaction_date"] >= start_date
+                    ]
+
+                if selected_material != "Semua Material":
+                    filtered_df = filtered_df[
+                        filtered_df["material"] == selected_material
+                    ]
+
+                if not filtered_df.empty:
+                    filtered_df["Tanggal"] = (
+                        filtered_df["transaction_date"].dt.strftime("%d-%m-%Y")
+                    )
+
+                    daily_data = filtered_df.pivot_table(
+                        index="Tanggal",
+                        columns="kind",
+                        values="qty",
+                        aggfunc="sum",
+                        fill_value=0
+                    )
+
+                    daily_data.index = pd.to_datetime(
+                        daily_data.index,
+                        format="%d-%m-%Y"
+                    )
+
+                    daily_data = daily_data.sort_index()
+
+                    daily_data.index = daily_data.index.strftime("%d-%m-%Y")
+
+                    daily_data = daily_data.rename(columns={
+                        "Masuk": "Material Masuk",
+                        "Keluar": "Material Keluar"
+                    })
+
+                    st.line_chart(daily_data)
+
+                else:
+                    st.info(
+                        "Belum ada transaksi pada periode dan material yang dipilih."
+                    )
+
+            else:
+                st.info("Tanggal transaksi belum tersedia.")
+
+        else:
+            st.info("Belum ada transaksi untuk membuat grafik perkembangan.")
+
+        # --------------------------
         # PERINGATAN STOK
         # --------------------------
         st.divider()
