@@ -774,7 +774,7 @@ def dashboard():
             </div>
             """, unsafe_allow_html=True)
 
-                        if st.button(
+            if st.button(
                 "Buka Proyek →",
                 key=f"project_{project['id']}",
                 use_container_width=True
