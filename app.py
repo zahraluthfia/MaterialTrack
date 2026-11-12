@@ -792,7 +792,7 @@ def dashboard():
 
             if st.session_state.get("confirm_delete") == project["id"]:
                 st.warning(f"Yakin ingin menghapus proyek {project['name']}?")
-                if st.button("Ya, Hapus", key=f"confirm_{project['id']}"):
+            if st.button("Ya, Hapus", key=f"confirm_{project['id']}"):
                     with connect_db() as db:
                         db.execute(
                             "DELETE FROM projects WHERE id = ? AND user_id = ?",
@@ -804,7 +804,7 @@ def dashboard():
                     st.success("Proyek berhasil dihapus.")
                     st.rerun()
 
-                if st.button("Batal", key=f"cancel_{project['id']}"):
+            if st.button("Batal", key=f"cancel_{project['id']}"):
                     st.session_state.pop("confirm_delete", None)
                     st.rerun()
 
