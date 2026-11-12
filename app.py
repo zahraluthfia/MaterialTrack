@@ -1546,12 +1546,12 @@ def transaction_page(kind):
 
     else:
         st.info("Belum ada transaksi.")
-
-    with incoming:
+with incoming:
         transaction_page("Masuk")
 
-    with outgoing:
+with outgoing:
         transaction_page("Keluar")
+    
 
     # --------------------------
     # STOCK AND REPORT
