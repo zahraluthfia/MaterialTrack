@@ -130,27 +130,6 @@ p, label {
 }
 
 /* BUTTON */
-div.stButton > button,
-div.stDownloadButton > button {
-    border-radius: 13px;
-    font-weight: 700;
-    min-height: 43px;
-    border: 1px solid #E9C8D7;
-    background: linear-gradient(135deg, #FFF1F6, #F9E5EF);
-    color: #75465B;
-    transition: all .2s ease;
-    box-shadow: 0 3px 9px rgba(185, 109, 140, .08);
-}
-
-div.stButton > button:hover,
-div.stDownloadButton > button:hover {
-    background: linear-gradient(135deg, #E9AFC5, #D9BCEB);
-    color: white;
-    border-color: #D9A5BD;
-    transform: translateY(-2px);
-    box-shadow: 0 7px 16px rgba(185, 109, 140, .20);
-}
-
 div.stButton > button:active,
 div.stDownloadButton > button:active {
     background: #B96D8C !important;
@@ -281,10 +260,6 @@ hr {
         animation-duration: .01ms !important;
         transition-duration: .01ms !important;
     }
-}
-div[data-testid="stButton"] button {
-    color: #FFFFFF !important;
-    font-weight: 600 !important;
 }
 </style>
 """, unsafe_allow_html=True)
