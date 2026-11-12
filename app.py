@@ -1356,102 +1356,196 @@ def project_detail():
     # TRANSACTIONS
     # --------------------------
 
-    def transaction_page(kind):
-        st.subheader(f"Catat Material {kind}")
+    
+def transaction_page(kind):
+    st.subheader(f"Catat Material {kind}")
 
-        materials = get_materials(project_id)
+    materials = get_materials(project_id)
 
-        if not materials:
-            st.warning(
-                "Tambahkan material terlebih dahulu di menu Data Material / RAB."
+    if not materials:
+        st.warning(
+            "Tambahkan material terlebih dahulu di menu Data Material / RAB."
+        )
+        return
+
+    options = {
+        f"{m['name']} ({m['unit']})": m["id"]
+        for m in materials
+    }
+
+    # Penyimpanan bukti sementara selama sesi aplikasi
+    if "transaction_evidence" not in st.session_state:
+        st.session_state.transaction_evidence = {}
+
+    with st.form(f"transaction_{kind}"):
+
+        selected = st.selectbox(
+            "Pilih material",
+            list(options.keys())
+        )
+
+        qty = st.number_input(
+            "Jumlah",
+            min_value=0.01,
+            step=1.0
+        )
+
+        trans_date = st.date_input(
+            "Tanggal transaksi",
+            value=date.today()
+        )
+
+        st.markdown("#### Dokumentasi Transaksi")
+
+        if kind == "Masuk":
+            person = st.text_input(
+                "Diterima oleh",
+                placeholder="Nama penerima material"
             )
+
+            purpose = ""
+
+            uploaded_file = st.file_uploader(
+                "Foto bukti penerimaan",
+                type=["jpg", "jpeg", "png"]
+            )
+
+        else:
+            person = st.text_input(
+                "Penanggung jawab",
+                placeholder="Nama penanggung jawab"
+            )
+
+            purpose = st.text_input(
+                "Digunakan untuk pekerjaan",
+                placeholder="Contoh: Pengecoran kolom lantai 1"
+            )
+
+            uploaded_file = st.file_uploader(
+                "Foto dokumentasi penggunaan",
+                type=["jpg", "jpeg", "png"]
+            )
+
+        note = st.text_input("Keterangan tambahan (opsional)")
+
+        submit = st.form_submit_button(
+            f"Simpan Material {kind}",
+            use_container_width=True
+        )
+
+    if submit:
+
+        if not person.strip():
+            st.error("Nama penerima atau penanggung jawab wajib diisi.")
             return
 
-        options = {
-            f"{m['name']} ({m['unit']})": m["id"]
-            for m in materials
+        material_id = options[selected]
+
+        with connect_db() as db:
+
+            if kind == "Keluar":
+                current = db.execute("""
+                    SELECT
+                        COALESCE(SUM(
+                            CASE WHEN kind = 'Masuk'
+                            THEN qty ELSE 0 END
+                        ), 0) -
+                        COALESCE(SUM(
+                            CASE WHEN kind = 'Keluar'
+                            THEN qty ELSE 0 END
+                        ), 0) AS stock
+                    FROM transactions
+                    WHERE project_id = ? AND material_id = ?
+                """, (project_id, material_id)).fetchone()
+
+                if qty > current["stock"]:
+                    st.error(
+                        f"Stok tidak cukup. "
+                        f"Stok tersedia: {current['stock']}."
+                    )
+                    return
+
+            cursor = db.execute("""
+                INSERT INTO transactions
+                (project_id, material_id, kind, qty, transaction_date, note)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (
+                project_id,
+                material_id,
+                kind,
+                qty,
+                str(trans_date),
+                note
+            ))
+
+            transaction_id = cursor.lastrowid
+            db.commit()
+
+        # Simpan bukti sementara berdasarkan ID transaksi
+        st.session_state.transaction_evidence[transaction_id] = {
+            "person": person,
+            "purpose": purpose,
+            "photo": uploaded_file.getvalue() if uploaded_file else None
         }
 
-        with st.form(f"transaction_{kind}"):
-            selected = st.selectbox(
-                "Pilih material",
-                list(options.keys())
+        st.success(f"Material {kind.lower()} berhasil dicatat.")
+        st.rerun()
+
+    st.divider()
+    st.subheader(f"Riwayat Material {kind}")
+
+    history = get_transactions(project_id, kind)
+
+    if history:
+        st.dataframe(
+            dataframe(history),
+            use_container_width=True,
+            hide_index=True
+        )
+
+        st.markdown("#### Dokumentasi Bukti Transaksi")
+
+        for transaction in history:
+            transaction_id = transaction["id"]
+
+            evidence = st.session_state.transaction_evidence.get(
+                transaction_id
             )
 
-            qty = st.number_input(
-                "Jumlah",
-                min_value=0.01,
-                step=1.0
-            )
+            with st.expander(
+                f"📦 {transaction['material']} — "
+                f"{transaction['transaction_date']}"
+            ):
 
-            trans_date = st.date_input(
-                "Tanggal transaksi",
-                value=date.today()
-            )
+                if evidence:
+                    st.write(f"**Nama:** {evidence['person']}")
 
-            note = st.text_input("Keterangan (opsional)")
-
-            submit = st.form_submit_button(
-                f"Simpan Material {kind}",
-                use_container_width=True
-            )
-
-        if submit:
-            material_id = options[selected]
-
-            with connect_db() as db:
-                if kind == "Keluar":
-                    current = db.execute("""
-                        SELECT
-                            COALESCE(SUM(
-                                CASE WHEN kind = 'Masuk'
-                                THEN qty ELSE 0 END
-                            ), 0) -
-                            COALESCE(SUM(
-                                CASE WHEN kind = 'Keluar'
-                                THEN qty ELSE 0 END
-                            ), 0) AS stock
-                        FROM transactions
-                        WHERE project_id = ? AND material_id = ?
-                    """, (project_id, material_id)).fetchone()
-
-                    if qty > current["stock"]:
-                        st.error(
-                            f"Stok tidak cukup. "
-                            f"Stok tersedia: {current['stock']}."
+                    if evidence["purpose"]:
+                        st.write(
+                            f"**Pekerjaan:** {evidence['purpose']}"
                         )
-                        return
 
-                db.execute("""
-                    INSERT INTO transactions
-                    (project_id, material_id, kind, qty, transaction_date, note)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                """, (
-                    project_id,
-                    material_id,
-                    kind,
-                    qty,
-                    str(trans_date),
-                    note
-                ))
-                db.commit()
+                    if evidence["photo"]:
+                        st.image(
+                            evidence["photo"],
+                            caption="Dokumentasi transaksi",
+                            width=350
+                        )
+                    else:
+                        st.info("Belum ada foto dokumentasi.")
 
-            st.success(f"Material {kind.lower()} berhasil dicatat.")
-            st.rerun()
+                else:
+                    st.info(
+                        "Belum ada dokumentasi tambahan untuk transaksi ini."
+                    )
 
-        st.divider()
-        st.write(f"**Riwayat Material {kind}**")
+                st.write(f"**Jumlah:** {transaction['qty']} {transaction['unit']}")
+                st.write(
+                    f"**Keterangan:** {transaction['note'] or '-'}"
+                )
 
-        history = get_transactions(project_id, kind)
-
-        if history:
-            st.dataframe(
-                dataframe(history),
-                use_container_width=True,
-                hide_index=True
-            )
-        else:
-            st.info("Belum ada transaksi.")
+    else:
+        st.info("Belum ada transaksi.")
 
     with incoming:
         transaction_page("Masuk")
