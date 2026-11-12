@@ -130,17 +130,43 @@ p, label {
 }
 
 /* BUTTON */
-div.stButton > button:active,
-div.stDownloadButton > button:active {
-    background: #B96D8C !important;
-    color: white !important;
-    transform: scale(.97);
+div.stButton > button,
+div.stDownloadButton > button,
+div[data-testid="stFormSubmitButton"] button {
+    border-radius: 13px !important;
+    font-weight: 700 !important;
+    min-height: 43px;
+    border: 1px solid #E9C8D7 !important;
+    background: linear-gradient(135deg, #FFF1F6, #F9E5EF) !important;
+    color: #75465B !important;
+    -webkit-text-fill-color: #75465B !important;
+    transition: all .2s ease;
+    box-shadow: 0 3px 9px rgba(185, 109, 140, .08);
 }
 
-div.stButton > button:focus:not(:active) {
-    border-color: #C77F9D;
-    color: #75465B;
-    box-shadow: 0 0 0 3px rgba(233, 175, 197, .25);
+div.stButton > button:hover,
+div.stDownloadButton > button:hover,
+div[data-testid="stFormSubmitButton"] button:hover {
+    background: linear-gradient(135deg, #E9AFC5, #D9BCEB) !important;
+    color: #FFFFFF !important;
+    -webkit-text-fill-color: #FFFFFF !important;
+    border-color: #D9A5BD !important;
+}
+
+div.stButton > button:active,
+div.stDownloadButton > button:active,
+div[data-testid="stFormSubmitButton"] button:active {
+    background: linear-gradient(135deg, #E9AFC5, #D9BCEB) !important;
+    color: #FFFFFF !important;
+    -webkit-text-fill-color: #FFFFFF !important;
+}
+
+div.stButton > button:focus:not(:active),
+div[data-testid="stFormSubmitButton"] button:focus:not(:active) {
+    background: linear-gradient(135deg, #FFF1F6, #F9E5EF) !important;
+    color: #75465B !important;
+    -webkit-text-fill-color: #75465B !important;
+    border-color: #C77F9D !important;
 }
 
 /* METRIC CARDS */
