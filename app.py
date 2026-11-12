@@ -882,33 +882,215 @@ def project_detail():
     # OVERVIEW
     # --------------------------
 
+   
     with overview:
         materials = get_stock(project_id)
 
-        total_types = len(materials)
-        total_in = sum(m["total_in"] for m in materials)
-        total_out = sum(m["total_out"] for m in materials)
+        # --------------------------
+        # PERHITUNGAN DATA
+        # --------------------------
+        stock_rows = []
+
+        for m in materials:
+            masuk = float(m["total_in"] or 0)
+            keluar = float(m["total_out"] or 0)
+            sisa = masuk - keluar
+            rab_qty = float(m["planned_qty"] or 0)
+
+            if rab_qty <= 0:
+                status = "Belum ada RAB"
+            elif sisa < 0 or (sisa / rab_qty * 100) <= 3:
+                status = "Kritis"
+            elif (sisa / rab_qty * 100) <= 10:
+                status = "Menipis"
+            else:
+                status = "Normal"
+
+            stock_rows.append({
+                "Material": m["name"],
+                "Material Masuk": masuk,
+                "Material Keluar": keluar,
+                "Sisa Stok": sisa,
+                "Kebutuhan RAB": rab_qty,
+                "Status": status
+            })
+
+        stock_df = pd.DataFrame(stock_rows)
+
+        total_types = len(stock_rows)
+        total_in = sum(r["Material Masuk"] for r in stock_rows)
+        total_out = sum(r["Material Keluar"] for r in stock_rows)
         total_stock = total_in - total_out
 
-        st.subheader("Ringkasan Proyek")
+        normal = sum(r["Status"] == "Normal" for r in stock_rows)
+        warning = sum(r["Status"] == "Menipis" for r in stock_rows)
+        critical = sum(r["Status"] == "Kritis" for r in stock_rows)
+        no_rab = sum(r["Status"] == "Belum ada RAB" for r in stock_rows)
+
+        # --------------------------
+        # JUDUL DASHBOARD
+        # --------------------------
+        st.markdown("""
+        <div style="
+            background:linear-gradient(120deg,#F9DCE8,#E9DDF8);
+            padding:24px;
+            border-radius:20px;
+            margin-bottom:20px;
+            box-shadow:0 5px 18px rgba(128,86,111,.08);
+        ">
+            <h2 style="color:#75465B;margin:0;">
+                📊 Project Overview
+            </h2>
+            <p style="color:#806477;margin:6px 0 0 0;">
+                Pantau kondisi material dan perkembangan proyekmu.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # --------------------------
+        # KARTU STATISTIK
+        # --------------------------
+        st.subheader("Ringkasan Material")
 
         c1, c2, c3, c4 = st.columns(4)
 
-        c1.metric("Jenis Material", total_types)
-        c2.metric("Material Masuk", f"{total_in:,g}")
-        c3.metric("Material Keluar", f"{total_out:,g}")
-        c4.metric("Sisa Stok", f"{total_stock:,g}")
+        c1.metric("📦 Jenis Material", f"{total_types:,}")
+        c2.metric("📥 Material Masuk", f"{total_in:,.2f}")
+        c3.metric("📤 Material Keluar", f"{total_out:,.2f}")
+        c4.metric("📊 Sisa Stok", f"{total_stock:,.2f}")
 
         st.divider()
 
-        st.subheader("Informasi Proyek")
-        st.write(f"**Nama:** {project['name']}")
-        st.write(f"**Lokasi:** {project['location'] or '-'}")
-        st.write(f"**Tanggal mulai:** {project['start_date'] or '-'}")
-        st.write(f"**Target selesai:** {project['end_date'] or '-'}")
-        st.write(f"**Deskripsi:** {project['description'] or '-'}")
+        # --------------------------
+        # STATUS STOK
+        # --------------------------
+        st.subheader("Kondisi Stok Material")
 
-        st.subheader("Transaksi Terbaru")
+        col_status, col_chart = st.columns([1, 1.5])
+
+        with col_status:
+            st.markdown("**Distribusi Status Stok**")
+
+            total_status = normal + warning + critical + no_rab
+
+            if total_status > 0:
+                normal_deg = normal / total_status * 360
+                warning_deg = warning / total_status * 360
+                critical_deg = critical / total_status * 360
+
+                st.markdown(f"""
+                <div style="
+                    width:190px;
+                    height:190px;
+                    border-radius:50%;
+                    margin:15px auto;
+                    background:conic-gradient(
+                        #E9AFC5 0deg {normal_deg}deg,
+                        #FFD84D {normal_deg}deg {normal_deg + warning_deg}deg,
+                        #FF5252 {normal_deg + warning_deg}deg {normal_deg + warning_deg + critical_deg}deg,
+                        #B9A9CC {normal_deg + warning_deg + critical_deg}deg 360deg
+                    );
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                ">
+                    <div style="
+                        width:115px;
+                        height:115px;
+                        background:#FFFAFC;
+                        border-radius:50%;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        flex-direction:column;
+                    ">
+                        <b style="font-size:27px;color:#75465B;">{total_status}</b>
+                        <span style="font-size:12px;color:#8D7C89;">Material</span>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.markdown(f"🩷 **Normal:** {normal}")
+            st.markdown(f"🟡 **Menipis:** {warning}")
+            st.markdown(f"🔴 **Kritis:** {critical}")
+            st.markdown(f"🟣 **Belum ada RAB:** {no_rab}")
+
+        with col_chart:
+            st.markdown("**Ringkasan Jumlah Material**")
+
+            if not stock_df.empty:
+                status_df = pd.DataFrame({
+                    "Jumlah Material": [
+                        normal, warning, critical, no_rab
+                    ]
+                }, index=[
+                    "Normal", "Menipis", "Kritis", "Belum ada RAB"
+                ])
+
+                st.bar_chart(status_df)
+
+        # --------------------------
+        # GRAFIK MATERIAL
+        # --------------------------
+        st.divider()
+        st.subheader("Analisis Material")
+
+        if not stock_df.empty:
+            chart_data = stock_df.set_index("Material")[
+                ["Material Masuk", "Material Keluar"]
+            ]
+
+            st.markdown("**Material Masuk vs Material Keluar**")
+            st.bar_chart(chart_data)
+
+            st.markdown("**Perbandingan Sisa Stok Setiap Material**")
+            remaining_chart = stock_df.set_index("Material")[["Sisa Stok"]]
+            st.bar_chart(remaining_chart)
+
+        else:
+            st.info("Belum ada data material untuk ditampilkan.")
+
+        # --------------------------
+        # PERINGATAN STOK
+        # --------------------------
+        st.divider()
+        st.subheader("Notifikasi Monitoring")
+
+        if critical > 0:
+            st.error(
+                f"🔴 Terdapat {critical} material dalam kondisi kritis "
+                "atau defisit. Periksa kebutuhan pengadaan."
+            )
+
+        if warning > 0:
+            st.warning(
+                f"🟡 Terdapat {warning} material yang stoknya mulai menipis."
+            )
+
+        if critical == 0 and warning == 0:
+            st.success("🩷 Tidak ada material dalam kondisi kritis atau menipis.")
+
+        if no_rab > 0:
+            st.info(
+                f"🟣 Ada {no_rab} material yang belum memiliki jumlah kebutuhan RAB."
+            )
+
+        # --------------------------
+        # INFORMASI PROYEK
+        # --------------------------
+        st.divider()
+
+        with st.expander("🏗️ Informasi Detail Proyek", expanded=False):
+            st.write(f"**Nama:** {project['name']}")
+            st.write(f"**Lokasi:** {project['location'] or '-'}")
+            st.write(f"**Tanggal mulai:** {project['start_date'] or '-'}")
+            st.write(f"**Target selesai:** {project['end_date'] or '-'}")
+            st.write(f"**Deskripsi:** {project['description'] or '-'}")
+
+        # --------------------------
+        # TRANSAKSI TERBARU
+        # --------------------------
+        st.subheader("🧾 Transaksi Terbaru")
 
         recent = get_transactions(project_id)
 
@@ -920,6 +1102,7 @@ def project_detail():
             )
         else:
             st.info("Belum ada transaksi material.")
+
 
     # --------------------------
     # RAB / MATERIAL
