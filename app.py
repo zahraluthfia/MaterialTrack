@@ -747,32 +747,34 @@ def dashboard():
         )
         return
 
+    
     cols = st.columns(2)
 
     for index, project in enumerate(projects):
         with cols[index % 2]:
-    with st.container(border=True):
-         st.subheader(project["name"])
+            with st.container(border=True):
+                st.subheader(project["name"])
 
-         st.caption(
-        f"Lokasi: {project['location'] or 'Belum diisi'}"
-    )
+                st.caption(
+                    f"Lokasi: {project['location'] or 'Belum diisi'}"
+                )
 
-         st.caption(
-        f"Periode: {project['start_date']} — {project['end_date']}"
-    )
+                st.caption(
+                    f"Periode: {project['start_date']} — {project['end_date']}"
+                )
 
-         st.write(
-        project["description"] or "Tidak ada deskripsi proyek."
-    )
+                st.write(
+                    project["description"] or "Tidak ada deskripsi proyek."
+                )
 
-            if st.button(
-                "Buka Proyek →",
-                key=f"project_{project['id']}",
-                use_container_width=True
-            ):
-                st.session_state.project_id = project["id"]
-                st.rerun()
+                if st.button(
+                    "Buka Proyek →",
+                    key=f"project_{project['id']}",
+                    use_container_width=True
+                ):
+                    st.session_state.project_id = project["id"]
+                    st.rerun()
+
 
             if st.button(
                 "🗑️ Hapus Proyek",
