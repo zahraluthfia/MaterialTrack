@@ -970,6 +970,7 @@ st.caption(
         </div>
         """, unsafe_allow_html=True)
 
+       
         # --------------------------
         # KARTU STATISTIK
         # --------------------------
@@ -977,11 +978,13 @@ st.caption(
 
         c1, c2, c3, c4 = st.columns(4)
 
-       c1.metric("Jenis Material", f"{total_types:,}")
-       c2.metric("Material Masuk", f"{total_in:,.2f}")
-       c3.metric("Material Keluar", f"{total_out:,.2f}")
-       c4.metric("Sisa Stok", f"{total_stock:,.2f}")
+        c1.metric("Jenis Material", f"{total_types:,}")
+        c2.metric("Material Masuk", f"{total_in:,.2f}")
+        c3.metric("Material Keluar", f"{total_out:,.2f}")
+        c4.metric("Sisa Stok", f"{total_stock:,.2f}")
+
         st.divider()
+
 
         # --------------------------
         # STATUS STOK
