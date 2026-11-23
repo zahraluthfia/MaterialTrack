@@ -751,18 +751,18 @@ def dashboard():
 
     for index, project in enumerate(projects):
         with cols[index % 2]:
-            with st.container(border=True):
-    st.subheader(project["name"])
+    with st.container(border=True):
+         st.subheader(project["name"])
 
-    st.caption(
+         st.caption(
         f"Lokasi: {project['location'] or 'Belum diisi'}"
     )
 
-    st.caption(
+         st.caption(
         f"Periode: {project['start_date']} — {project['end_date']}"
     )
 
-    st.write(
+         st.write(
         project["description"] or "Tidak ada deskripsi proyek."
     )
 
