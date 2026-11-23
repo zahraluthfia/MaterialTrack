@@ -13,12 +13,11 @@ from io import BytesIO
 
 DB_PATH = "materialtrack.db"
 st.set_page_config(
-    page_title="MaterialTrack",
+    page_title="MaterialTrack | Construction Management",
     page_icon="🏗️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
 # ==================================================
 # DESIGN
 # ==================================================
@@ -26,16 +25,18 @@ st.set_page_config(
 
 st.markdown("""
 <style>
+
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --pink: #E9AFC5;
-    --pink-light: #FFF1F6;
-    --pink-dark: #B96D8C;
-    --purple: #A995C9;
-    --text: #574453;
-    --muted: #8D7C89;
-    --border: #F0DCE6;
+    --navy: #243B53;
+    --navy-dark: #172B4D;
+    --blue-light: #EAF0F6;
+    --text: #263445;
+    --muted: #718096;
+    --border: #E2E8F0;
+    --surface: #FFFFFF;
+    --background: #F7F9FC;
     --yellow: #FFD84D;
     --red: #FF5252;
 }
@@ -45,10 +46,7 @@ html, body, [class*="css"] {
 }
 
 .stApp {
-    background:
-        radial-gradient(circle at 8% 10%, #FCE4EF 0, transparent 25%),
-        radial-gradient(circle at 95% 85%, #EAE3FA 0, transparent 27%),
-        linear-gradient(135deg, #FFFAFC, #FFF6FA 55%, #F8F5FF);
+    background: var(--background);
     color: var(--text);
 }
 
@@ -60,8 +58,8 @@ html, body, [class*="css"] {
 
 /* SIDEBAR */
 [data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #FCE8F0, #F5EAF8);
-    border-right: 1px solid #F0D5E2;
+    background: #FFFFFF;
+    border-right: 1px solid var(--border);
 }
 
 [data-testid="stSidebar"] > div:first-child {
@@ -70,210 +68,196 @@ html, body, [class*="css"] {
 
 /* HEADING */
 h1, h2, h3, h4 {
-    color: #604052;
-    font-weight: 800;
-    letter-spacing: -0.5px;
+    color: var(--navy-dark);
+    font-weight: 700;
+    letter-spacing: -0.4px;
 }
 
 p, label {
-    color: #665663;
+    color: var(--text);
 }
 
 /* HERO */
-.hero {
-    background: linear-gradient(120deg, #DDEBFA, #E9DDF8, #F9DCE8);
-    padding: 32px;
-    border-radius: 24px;
-    margin-bottom: 25px;
-    box-shadow: 0 8px 25px rgba(153, 116, 151, 0.10);
-    animation: fadeUp .65s ease both;
+.hero,
+.pink-hero {
+    background: #FFFFFF;
+    padding: 28px 30px;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--navy);
+    border-radius: 10px;
+    margin-bottom: 22px;
+    box-shadow: 0 2px 8px rgba(30, 50, 70, 0.04);
+    animation: fadeUp .4s ease both;
 }
 
 .hero h1 {
-    color: #344C68;
-    font-size: 34px;
-    font-weight: 800;
+    color: var(--navy-dark);
+    font-size: 32px;
+    font-weight: 700;
 }
 
 .hero p {
-    color: #53677D;
-}
-
-.pink-hero {
-    background: linear-gradient(120deg, #F9DCE8, #E9DDF8);
-    padding: 27px;
-    border-radius: 23px;
-    margin-bottom: 23px;
-    box-shadow: 0 8px 22px rgba(153, 116, 151, 0.10);
-    animation: fadeUp .6s ease both;
+    color: var(--muted);
 }
 
 .pink-hero h2 {
-    color: #75465B;
+    color: var(--navy-dark);
     margin-bottom: 5px;
 }
 
 /* PROJECT CARD */
 .project-card {
-    background: rgba(255,255,255,.92);
+    background: #FFFFFF;
     border: 1px solid var(--border);
-    border-radius: 19px;
+    border-radius: 10px;
     padding: 20px;
     margin-bottom: 12px;
-    box-shadow: 0 5px 18px rgba(128, 86, 111, .06);
-    transition: transform .25s ease, box-shadow .25s ease;
+    box-shadow: 0 2px 7px rgba(30, 50, 70, 0.04);
+    transition: border-color .2s ease, box-shadow .2s ease;
 }
 
 .project-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 28px rgba(128, 86, 111, .13);
+    border-color: #9AAFC4;
+    box-shadow: 0 5px 14px rgba(30, 50, 70, 0.08);
 }
 
 /* BUTTON */
 div.stButton > button,
 div.stDownloadButton > button,
 div[data-testid="stFormSubmitButton"] button {
-    border-radius: 13px !important;
-    font-weight: 700 !important;
-    min-height: 43px;
-    border: 1px solid #E9C8D7 !important;
-    background: linear-gradient(135deg, #FFF1F6, #F9E5EF) !important;
-    color: #75465B !important;
-    -webkit-text-fill-color: #75465B !important;
-    transition: all .2s ease;
-    box-shadow: 0 3px 9px rgba(185, 109, 140, .08);
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    min-height: 40px;
+    border: 1px solid var(--navy) !important;
+    background: var(--navy) !important;
+    color: #FFFFFF !important;
+    -webkit-text-fill-color: #FFFFFF !important;
+    transition: background .2s ease, border-color .2s ease;
+    box-shadow: none !important;
 }
 
 div.stButton > button:hover,
 div.stDownloadButton > button:hover,
 div[data-testid="stFormSubmitButton"] button:hover {
-    background: linear-gradient(135deg, #E9AFC5, #D9BCEB) !important;
+    background: var(--navy-dark) !important;
     color: #FFFFFF !important;
     -webkit-text-fill-color: #FFFFFF !important;
-    border-color: #D9A5BD !important;
+    border-color: var(--navy-dark) !important;
 }
 
 div.stButton > button:active,
 div.stDownloadButton > button:active,
 div[data-testid="stFormSubmitButton"] button:active {
-    background: linear-gradient(135deg, #E9AFC5, #D9BCEB) !important;
+    background: #10233D !important;
     color: #FFFFFF !important;
     -webkit-text-fill-color: #FFFFFF !important;
 }
 
 div.stButton > button:focus:not(:active),
 div[data-testid="stFormSubmitButton"] button:focus:not(:active) {
-    background: linear-gradient(135deg, #FFF1F6, #F9E5EF) !important;
-    color: #75465B !important;
-    -webkit-text-fill-color: #75465B !important;
-    border-color: #C77F9D !important;
+    border-color: #718096 !important;
+    box-shadow: 0 0 0 2px rgba(36, 59, 83, .15) !important;
 }
 
-/* METRIC CARDS */
+/* METRIC */
 div[data-testid="stMetric"] {
-    background: rgba(255,255,255,.92);
-    border: 1px solid #F0DCE5;
-    border-radius: 18px;
-    padding: 19px;
-    box-shadow: 0 5px 18px rgba(128, 86, 111, .06);
-    transition: transform .25s ease, box-shadow .25s ease;
-}
-
-div[data-testid="stMetric"]:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 22px rgba(128, 86, 111, .12);
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 17px;
+    box-shadow: none;
 }
 
 div[data-testid="stMetricLabel"] {
-    color: #8D7181;
-    font-weight: 600;
+    color: var(--muted);
+    font-weight: 500;
 }
 
 div[data-testid="stMetricValue"] {
-    color: #75465B;
-    font-weight: 800;
+    color: var(--navy-dark);
+    font-weight: 700;
 }
 
 /* INPUT */
 div[data-baseweb="input"] input,
 div[data-baseweb="textarea"] textarea {
     background-color: #FFFFFF !important;
-    color: #604052 !important;
-    -webkit-text-fill-color: #604052 !important;
-    border-radius: 11px !important;
+    color: var(--text) !important;
+    -webkit-text-fill-color: var(--text) !important;
+    border-radius: 7px !important;
 }
 
 div[data-baseweb="input"] input::placeholder,
 div[data-baseweb="textarea"] textarea::placeholder {
-    color: #B49AA7 !important;
-    -webkit-text-fill-color: #B49AA7 !important;
+    color: #9AA5B1 !important;
+    -webkit-text-fill-color: #9AA5B1 !important;
     opacity: 1 !important;
 }
 
 div[data-baseweb="input"] > div,
 div[data-baseweb="textarea"] > div {
     background-color: #FFFFFF !important;
-    border-color: #E9C8D7 !important;
-    border-radius: 11px !important;
+    border-color: var(--border) !important;
+    border-radius: 7px !important;
 }
 
 /* TABS */
 .stTabs [data-baseweb="tab-list"] {
-    gap: 9px;
-    border-bottom: 1px solid #F0DCE5;
+    gap: 5px;
+    border-bottom: 1px solid var(--border);
 }
 
 .stTabs [data-baseweb="tab"] {
-    background: #F9E8EF;
-    border-radius: 12px 12px 0 0;
-    padding: 11px 17px;
-    color: #806477;
-    font-weight: 600;
-    transition: all .2s ease;
+    background: transparent;
+    border-radius: 7px 7px 0 0;
+    padding: 10px 16px;
+    color: var(--muted);
+    font-weight: 500;
+    transition: color .2s ease, background .2s ease;
 }
 
 .stTabs [data-baseweb="tab"]:hover {
-    background: #F1D3E0;
-    color: #75465B;
+    background: var(--blue-light);
+    color: var(--navy);
 }
 
 .stTabs [data-baseweb="tab"][aria-selected="true"] {
-    background: #E9AFC5;
-    color: #FFFFFF;
-    font-weight: 800;
+    background: var(--blue-light);
+    color: var(--navy-dark);
+    font-weight: 700;
 }
 
 /* FORM */
 div[data-testid="stForm"] {
-    background: rgba(255,255,255,.95);
+    background: #FFFFFF;
     padding: 19px;
-    border: 1px solid #F1DCE5;
-    border-radius: 18px;
-    box-shadow: 0 5px 18px rgba(128, 86, 111, .05);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: none;
 }
 
 /* ALERT */
 div[data-testid="stAlert"] {
-    border-radius: 14px;
+    border-radius: 8px;
 }
 
 /* TABLE */
 div[data-testid="stDataFrame"] {
-    border: 1px solid #F0DCE5;
-    border-radius: 15px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
     overflow: hidden;
 }
 
 /* DIVIDER */
 hr {
-    border-color: #F0DCE5;
+    border-color: var(--border);
 }
 
 /* ANIMATION */
 @keyframes fadeUp {
     from {
         opacity: 0;
-        transform: translateY(12px);
+        transform: translateY(7px);
     }
     to {
         opacity: 1;
@@ -287,6 +271,7 @@ hr {
         transition-duration: .01ms !important;
     }
 }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -764,20 +749,22 @@ def dashboard():
 
     cols = st.columns(2)
 
-    pastel_colors = ["#FCE5EE", "#E9E1F8", "#DFF2E9", "#FFF0D5"]
-
     for index, project in enumerate(projects):
         with cols[index % 2]:
-            color = pastel_colors[index % len(pastel_colors)]
+            with st.container(border=True):
+    st.subheader(project["name"])
 
-            st.markdown(f"""
-            <div class="project-card" style="background:{color}">
-                <h3>🏗️ {project['name']}</h3>
-                <p>📍 {project['location'] or 'Lokasi belum diisi'}</p>
-                <p>📅 {project['start_date']} — {project['end_date']}</p>
-                <small>{project['description'] or 'Tidak ada deskripsi.'}</small>
-            </div>
-            """, unsafe_allow_html=True)
+    st.caption(
+        f"Lokasi: {project['location'] or 'Belum diisi'}"
+    )
+
+    st.caption(
+        f"Periode: {project['start_date']} — {project['end_date']}"
+    )
+
+    st.write(
+        project["description"] or "Tidak ada deskripsi proyek."
+    )
 
             if st.button(
                 "Buka Proyek →",
@@ -963,7 +950,10 @@ def project_detail():
         # --------------------------
         st.markdown("""
         <div style="
-            background:linear-gradient(120deg,#F9DCE8,#E9DDF8);
+            st.title("Project Overview")
+st.caption(
+    "Pantau kondisi material dan perkembangan proyek."
+)
             padding:24px;
             border-radius:20px;
             margin-bottom:20px;
@@ -985,11 +975,10 @@ def project_detail():
 
         c1, c2, c3, c4 = st.columns(4)
 
-        c1.metric("📦 Jenis Material", f"{total_types:,}")
-        c2.metric("📥 Material Masuk", f"{total_in:,.2f}")
-        c3.metric("📤 Material Keluar", f"{total_out:,.2f}")
-        c4.metric("📊 Sisa Stok", f"{total_stock:,.2f}")
-
+       c1.metric("Jenis Material", f"{total_types:,}")
+       c2.metric("Material Masuk", f"{total_in:,.2f}")
+       c3.metric("Material Keluar", f"{total_out:,.2f}")
+       c4.metric("Sisa Stok", f"{total_stock:,.2f}")
         st.divider()
 
         # --------------------------
